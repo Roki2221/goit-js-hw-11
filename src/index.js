@@ -7,12 +7,13 @@ const searchForm = document.querySelector('.search-form');
 const galleryContainer = document.querySelector('.gallery');
 const loadBtn = document.querySelector('.load-more');
 searchForm.elements.subBtn.setAttribute('disabled', 'true');
-const page = 1;
+let page = 1;
+let maxpage = 0;
 
 async function servicePhotos(request) {
   request.split(' ').join('+');
   const response = await axios.get(
-    `https://pixabay.com/api/?key=40085171-b4834c19132777055d535b782&q=${request}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40`
+    `https://pixabay.com/api/?key=40085171-b4834c19132777055d535b782&q=${request}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${page}`
   );
   console.log(response);
   return response;
@@ -27,6 +28,8 @@ function handleInput() {
 
 function handleSubmit(event) {
   event.preventDefault();
+  page = 1;
+  maxpage = 0;
   galleryContainer.innerHTML = '';
   loadBtn.style.visibility = 'hidden';
   servicePhotos(searchForm.elements.searchQuery.value)
@@ -34,12 +37,12 @@ function handleSubmit(event) {
       if (response.data.hits.length === 0) {
         throw new Error('Empty response');
       }
-      galleryContainer.insertAdjacentHTML(
-        'afterbegin',
-        galleryMarkup(response)
-      );
+
+      maxpage = Math.ceil(response.data.totalHits / 40);
+
+      console.log('maxpage', maxpage);
+      galleryContainer.insertAdjacentHTML('beforeend', galleryMarkup(response));
       loadBtn.style.visibility = 'visible';
-      console.log(1);
     })
     .catch(error => {
       if (error.message === 'Empty response') {
@@ -96,3 +99,33 @@ function galleryMarkup(dataObj) {
     )
     .join('');
 }
+function loadMoreClick() {
+  if (maxpage === page) {
+    Notiflix.Notify.warning(
+      "We're sorry, but you've reached the end of search results."
+    );
+    return;
+  }
+  page += 1;
+  servicePhotos(searchForm.elements.searchQuery.value)
+    .then(response => {
+      if (response.data.hits.length === 0) {
+        throw new Error('Empty response');
+      }
+      console.log('maxpage', maxpage);
+      galleryContainer.insertAdjacentHTML('beforeend', galleryMarkup(response));
+    })
+    .catch(error => {
+      if (error.message === 'Empty response') {
+        Notiflix.Notify.warning(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+      } else {
+        Notiflix.Notify.warning(
+          'Oops! Something went wrong! Try reloading the page!'
+        );
+      }
+    });
+}
+
+loadBtn.addEventListener('click', loadMoreClick);
