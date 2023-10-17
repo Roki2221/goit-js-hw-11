@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  padding-bottom: 20px;
+}
+
+.searh {
+  background-color: rgb(63, 86, 207);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  text-align: center;
+  box-shadow: 0 0 9px 0;
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+}
+.search-form {
+}
+.gallery {
+  margin-top: 40px;
+  display: flex;
+  gap: 10px;
+  padding: 30px;
+  justify-content: space-between;
+  height: 100%;
+  flex-wrap: wrap;
+}
+.load-more {
+  background-color: rgb(63, 86, 207);
+  color: white;
+  border: 0;
+  width: 200px;
+  height: 40px;
+  margin: 0 auto;
+  display: block;
+  visibility: hidden;
+}
+.info {
+  display: flex;
+  justify-content: space-between;
+}
+
+.photo-card {
+  border: 3px;
+  width: 300px;
+}
+.info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
