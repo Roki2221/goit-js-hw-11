@@ -1,7 +1,7 @@
 // api key 40085171-b4834c19132777055d535b782
 //https://pixabay.com/api/?key=40085171-b4834c19132777055d535b782&q=yellow+flowers&image_type=photo
-import axios from 'axios';
 import Notiflix from 'notiflix';
+import { servicePhotos } from './js/photo-api';
 
 const searchForm = document.querySelector('.search-form');
 const galleryContainer = document.querySelector('.gallery');
@@ -9,15 +9,6 @@ const loadBtn = document.querySelector('.load-more');
 searchForm.elements.subBtn.setAttribute('disabled', 'true');
 let page = 1;
 let maxpage = 0;
-
-async function servicePhotos(request) {
-  request.split(' ').join('+');
-  const response = await axios.get(
-    `https://pixabay.com/api/?key=40085171-b4834c19132777055d535b782&q=${request}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=${page}`
-  );
-  console.log(response);
-  return response;
-}
 
 function handleInput() {
   if (searchForm.elements.searchQuery.value.length !== 0) {
@@ -28,11 +19,15 @@ function handleInput() {
 
 function handleSubmit(event) {
   event.preventDefault();
+  if (searchForm.elements.searchQuery.value.trim().length === 0) {
+    Notiflix.Notify.warning('Sorry, uncorrect search query. Please try again.');
+    return;
+  }
   page = 1;
   maxpage = 0;
   galleryContainer.innerHTML = '';
   loadBtn.style.visibility = 'hidden';
-  servicePhotos(searchForm.elements.searchQuery.value)
+  servicePhotos(searchForm.elements.searchQuery.value, page)
     .then(response => {
       if (response.data.hits.length === 0) {
         throw new Error('Empty response');
@@ -42,7 +37,9 @@ function handleSubmit(event) {
 
       console.log('maxpage', maxpage);
       galleryContainer.insertAdjacentHTML('beforeend', galleryMarkup(response));
-      loadBtn.style.visibility = 'visible';
+      if (maxpage > 1) {
+        loadBtn.style.visibility = 'visible';
+      }
     })
     .catch(error => {
       if (error.message === 'Empty response') {
@@ -100,14 +97,15 @@ function galleryMarkup(dataObj) {
     .join('');
 }
 function loadMoreClick() {
+  page += 1;
   if (maxpage === page) {
     Notiflix.Notify.warning(
       "We're sorry, but you've reached the end of search results."
     );
-    return;
+    loadBtn.style.visibility = 'hidden';
   }
-  page += 1;
-  servicePhotos(searchForm.elements.searchQuery.value)
+
+  servicePhotos(searchForm.elements.searchQuery.value, page)
     .then(response => {
       if (response.data.hits.length === 0) {
         throw new Error('Empty response');
